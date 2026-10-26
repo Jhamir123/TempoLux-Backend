@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: 'postgres:17'
+    container_name: tempolux-postgres
+    environment:
+      - 'POSTGRES_DB=TempoLux'
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_PASSWORD=1234'
+    ports:
+      - '5432:5432'
+    volumes:
+      - tempolux-pgdata:/var/lib/postgresql/data
+
+  emqx:
+    image: 'emqx/emqx:5.1.2'
+    container_name: tempolux-emqx
+    ports:
+      - '1883:1883'
+      - '18083:18083'
+    restart: always
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: tempolux-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin_tempolux
+      DOCKER_INFLUXDB_INIT_PASSWORD: 12345678
+      DOCKER_INFLUXDB_INIT_ORG: tempolux-org
+      DOCKER_INFLUXDB_INIT_BUCKET: telemetry-bucket
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: tempolux-dev-token-change-me
+    ports:
+      - '8086:8086'
+    volumes:
+      - tempolux-influxdb:/var/lib/influxdb2
+      - tempolux-influxdb-config:/etc/influxdb2
+    restart: unless-stopped
+
+volumes:
+  tempolux-pgdata:
+  tempolux-influxdb:
+  tempolux-influxdb-config:
